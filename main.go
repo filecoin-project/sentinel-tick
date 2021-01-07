@@ -110,10 +110,12 @@ func setupExchanges(cctx *cli.Context) ([]quotetracker.Exchange, error) {
 	var exchanges []quotetracker.Exchange
 
 	if cmkInterval := cctx.Int("cmk"); cmkInterval > 0 {
-		exchanges = append(exchanges, &quotetracker.CoinMarketCap{
+		cmc := &quotetracker.CoinMarketCap{
 			Token: cctx.String("cmk-token"),
 			TTL:   time.Second * time.Duration(cmkInterval),
-		})
+		}
+		exchanges = append(exchanges, cmc)
+		fmt.Println("Initialized %s", cmc)
 	}
 
 	return exchanges, nil
@@ -139,7 +141,9 @@ func setupPairs(cctx *cli.Context) ([]quotetracker.Pair, error) {
 			return nil, fmt.Errorf("%s: %w", pairSymbols[1], err)
 		}
 
-		pairs = append(pairs, quotetracker.Pair{Sell: sell, Buy: buy})
+		pair := quotetracker.Pair{Sell: sell, Buy: buy}
+		pairs = append(pairs, pair)
+		fmt.Println("Tracking %s", pair)
 	}
 	return pairs, nil
 }

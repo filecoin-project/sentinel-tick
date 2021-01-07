@@ -42,6 +42,10 @@ type Quotes []Quote
 
 // Persist uses a transaction to insert multiple quotes in the DB.
 func (q Quotes) Persist(ctx context.Context, tx *pg.Tx) error {
+	if len(q) == 0 {
+		return nil
+	}
+
 	_, err := tx.ModelContext(ctx, &q).
 		OnConflict("do nothing").
 		Insert()

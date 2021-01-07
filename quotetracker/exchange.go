@@ -48,6 +48,10 @@ type Pair struct {
 	Buy  Currency
 }
 
+func (p Pair) String() string {
+	return p.Sell.Symbol() + "-" + p.Buy.Symbol()
+}
+
 // Quote provides price information for a given pair.
 type Quote struct {
 	Pair      Pair
@@ -56,7 +60,7 @@ type Quote struct {
 }
 
 func (q Quote) String() string {
-	return fmt.Sprintf("%s-%s: %f (%s)", q.Pair.Sell.Symbol(), q.Pair.Buy.Symbol(), q.Amount, q.Timestamp)
+	return fmt.Sprintf("%s: %f (%s)", q.Pair, q.Amount, q.Timestamp)
 }
 
 // An exchange returns current Quotes for a given pair.
