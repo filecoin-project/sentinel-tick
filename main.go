@@ -57,7 +57,7 @@ func main() {
 			&cli.IntFlag{
 				Name:    "coinmarketcap",
 				Aliases: []string{"cmc"},
-				Usage:   "Interval between requests to coinmarketcap. 0 to disable",
+				Usage:   "Minimum interval between requests to coinmarketcap. Default: source disabled.",
 				Value:   0,
 				EnvVars: []string{"SENTINEL_TICK_COINMARKETCAP"},
 			},
