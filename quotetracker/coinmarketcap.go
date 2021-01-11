@@ -39,11 +39,16 @@ type CoinMarketCap struct {
 	TTL   time.Duration
 
 	values map[Pair]Quote
+	client *http.Client
 }
 
 // Price obtains the current Quote for the given pair. It returns cached values
 // if a previous Quote is within its TTL.
 func (ex *CoinMarketCap) Price(ctx context.Context, pair Pair) (Quote, error) {
+	if ex.client == nil {
+		ex.client = &http.Client{}
+	}
+
 	if ex.values == nil {
 		ex.values = make(map[Pair]Quote)
 	}

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/blang/semver/v4"
@@ -45,6 +47,12 @@ func main() {
 				Usage:   "Comma-separated list of pairs",
 				EnvVars: []string{"SENTINEL_TICK_PAIRS"},
 				Value:   "FIL-USD",
+			},
+			&cli.DurationFlag{
+				Name:    "timeout",
+				Usage:   "Timeout before aborting a request to a provider",
+				EnvVars: []string{"SENTINEL_TICK_TIMEOUT"},
+				Value:   10 * time.Second,
 			},
 			&cli.IntFlag{
 				Name:    "coinmarketcap",
@@ -151,23 +159,44 @@ func setupPairs(cctx *cli.Context) ([]quotetracker.Pair, error) {
 // For each exchange, for each given pair, fetch quotes and add them to the DB (in a single transaction).
 func fetchQuotes(cctx *cli.Context, db *pg.DB, exchanges []quotetracker.Exchange, pairs []quotetracker.Pair) error {
 	quotes := make(Quotes, 0, len(exchanges))
+	quotesCh := make(chan Quote, len(exchanges)*len(pairs))
 	epoch := filEpoch(time.Now())
+
+	// Ensure requests take no longer than some seconds.
+	ctx, cancel := context.WithTimeout(cctx.Context, cctx.Duration("timeout"))
+	defer cancel()
+
+	var wg sync.WaitGroup
 
 	fmt.Println("-- Epoch ", epoch)
 	for _, ex := range exchanges {
 		for _, pair := range pairs {
-			q, err := ex.Price(cctx.Context, pair)
-			if err != nil {
-				log.Println(err)
-				continue
-			}
-			fmt.Println(ex, q)
-			quotes = append(quotes, NewQuote(
-				epoch,
-				ex.String(),
-				q,
-			))
+			wg.Add(1)
+			go func(ex quotetracker.Exchange, pair quotetracker.Pair) {
+				defer wg.Done()
+
+				q, err := ex.Price(ctx, pair)
+				if err != nil {
+					log.Println(err)
+					return
+				}
+
+				// Only add if the quote is for the epoch we wanted.
+				if filEpoch(q.Timestamp) == epoch {
+					fmt.Println(ex, q)
+					quotesCh <- NewQuote(
+						epoch,
+						ex.String(),
+						q,
+					)
+				}
+			}(ex, pair)
 		}
+	}
+	wg.Wait()
+	close(quotesCh)
+	for q := range quotesCh {
+		quotes = append(quotes, q)
 	}
 
 	tx, err := db.Begin()
