@@ -48,7 +48,7 @@ func main() {
 			},
 			&cli.IntFlag{
 				Name:    "coinmarketcap",
-				Aliases: []string{"cmk"},
+				Aliases: []string{"cmc"},
 				Usage:   "Interval between requests to coinmarketcap. 0 to disable",
 				Value:   0,
 				EnvVars: []string{"SENTINEL_TICK_COINMARKETCAP"},
@@ -109,13 +109,13 @@ func main() {
 func setupExchanges(cctx *cli.Context) ([]quotetracker.Exchange, error) {
 	var exchanges []quotetracker.Exchange
 
-	if cmkInterval := cctx.Int("cmk"); cmkInterval > 0 {
+	if cmkInterval := cctx.Int("cmc"); cmkInterval > 0 {
 		cmc := &quotetracker.CoinMarketCap{
 			Token: cctx.String("cmk-token"),
 			TTL:   time.Second * time.Duration(cmkInterval),
 		}
 		exchanges = append(exchanges, cmc)
-		fmt.Println("Initialized %s", cmc)
+		fmt.Println("Initialized", cmc)
 	}
 
 	return exchanges, nil
@@ -143,7 +143,7 @@ func setupPairs(cctx *cli.Context) ([]quotetracker.Pair, error) {
 
 		pair := quotetracker.Pair{Sell: sell, Buy: buy}
 		pairs = append(pairs, pair)
-		fmt.Println("Tracking %s", pair)
+		fmt.Println("Tracking", pair.String())
 	}
 	return pairs, nil
 }
