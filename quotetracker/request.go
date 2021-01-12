@@ -12,7 +12,7 @@ type quoteResponse interface {
 	Quote() (Quote, error)
 }
 
-var client = &http.Client{}
+var globalHTTPClient = &http.Client{}
 
 func request(ctx context.Context, url string, query url.Values, headers http.Header, response quoteResponse) (Quote, error) {
 	req, err := http.NewRequestWithContext(
@@ -32,7 +32,7 @@ func request(ctx context.Context, url string, query url.Values, headers http.Hea
 		req.URL.RawQuery = query.Encode()
 	}
 
-	resp, err := client.Do(req)
+	resp, err := globalHTTPClient.Do(req)
 	if err != nil {
 		return Quote{}, err
 	}

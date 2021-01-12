@@ -48,17 +48,24 @@ func (r *krakenResponse) Quote() (Quote, error) {
 	return quote, nil
 }
 
+var _ Exchange = (*Kraken)(nil)
+
 // Kraken implements fetching quotes from Kraken.
 type Kraken struct {
+	url string // for testing
 }
 
 // Price fetches the last trade price from Kraken.
 func (ex *Kraken) Price(ctx context.Context, pair Pair) (Quote, error) {
+	if ex.url == "" {
+		ex.url = krakenURL
+	}
+
 	q := url.Values{}
 	q.Add("pair", pair.Sell.Symbol()+pair.Buy.Symbol())
 	return request(
 		ctx,
-		krakenURL,
+		ex.url,
 		q,
 		nil,
 		&krakenResponse{pair: pair},

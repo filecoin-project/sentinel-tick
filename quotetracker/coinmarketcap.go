@@ -54,6 +54,8 @@ func (r *coinMarketCapResponse) Quote() (Quote, error) {
 	return quote, nil
 }
 
+var _ Exchange = (*CoinMarketCap)(nil)
+
 // c9bd50b1-7a2b-4b5c-9ede-b12a949cc96b
 
 // CoinMarketCap implements fetching from coinmarketcap.com.
@@ -62,6 +64,7 @@ type CoinMarketCap struct {
 	TTL   time.Duration
 
 	values map[Pair]Quote
+	url    string // for testing
 }
 
 // Price obtains the current Quote for the given pair. It returns cached values
@@ -69,6 +72,10 @@ type CoinMarketCap struct {
 func (ex *CoinMarketCap) Price(ctx context.Context, pair Pair) (Quote, error) {
 	if ex.values == nil {
 		ex.values = make(map[Pair]Quote)
+	}
+
+	if ex.url == "" {
+		ex.url = coinMarketCapURL
 	}
 
 	cached, ok := ex.values[pair]
@@ -86,7 +93,7 @@ func (ex *CoinMarketCap) Price(ctx context.Context, pair Pair) (Quote, error) {
 
 	quote, err := request(
 		ctx,
-		coinMarketCapURL,
+		ex.url,
 		q,
 		headers,
 		&coinMarketCapResponse{pair: pair},
