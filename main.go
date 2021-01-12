@@ -1,3 +1,6 @@
+// This package implements the sentinel-tick application. Once launched, it
+// request price information for the configured pairs from the configured
+// exchanges.
 package main
 
 import (
@@ -63,9 +66,15 @@ func main() {
 			},
 			&cli.StringFlag{
 				Name:    "coinmarketcap-token",
-				Aliases: []string{"cmk-token"},
+				Aliases: []string{"cmc-token"},
 				Usage:   "API token for CoinMarketCap.com",
 				EnvVars: []string{"SENTINEL_TICK_COINMARKETCAP_TOKEN"},
+			},
+			&cli.BoolFlag{
+				Name:    "kraken",
+				Usage:   "Enable kraken",
+				EnvVars: []string{"KRAKEN"},
+				Value:   true,
 			},
 		},
 		Action: func(cctx *cli.Context) error {
@@ -119,11 +128,17 @@ func setupExchanges(cctx *cli.Context) ([]quotetracker.Exchange, error) {
 
 	if cmkInterval := cctx.Int("cmc"); cmkInterval > 0 {
 		cmc := &quotetracker.CoinMarketCap{
-			Token: cctx.String("cmk-token"),
+			Token: cctx.String("cmc-token"),
 			TTL:   time.Second * time.Duration(cmkInterval),
 		}
 		exchanges = append(exchanges, cmc)
 		fmt.Println("Initialized", cmc)
+	}
+
+	if krakenEnabled := cctx.Bool("kraken"); krakenEnabled {
+		kraken := &quotetracker.Kraken{}
+		exchanges = append(exchanges, kraken)
+		fmt.Println("Initialized", kraken)
 	}
 
 	return exchanges, nil

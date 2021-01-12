@@ -1,3 +1,6 @@
+// Package quotetracker provides an Exchange interface that can be used to
+// fetch price information (Quote) for currency pairs from different sources
+// (implementations of Exchange).
 package quotetracker
 
 import (
@@ -63,7 +66,7 @@ func (q Quote) String() string {
 	return fmt.Sprintf("%s: %f (%s)", q.Pair, q.Amount, q.Timestamp)
 }
 
-// An exchange returns current Quotes for a given pair.
+// Exchange can be implemented by any service that can return current pricing quotes for a given pair.
 type Exchange interface {
 	Price(context.Context, Pair) (Quote, error)
 	String() string

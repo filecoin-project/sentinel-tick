@@ -2,9 +2,7 @@ package quotetracker
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
@@ -12,24 +10,51 @@ import (
 
 const coinMarketCapURL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
 
-type apiData struct {
-	Data   map[string]*curData `json:"data"`
-	Status status              `json:"status"`
+type coinMarketCapResponse struct {
+	pair Pair
+
+	Data   map[string]*coinMarketCapData `json:"data"`
+	Status coinMarketCapStatus           `json:"status"`
 }
 
-type status struct {
+type coinMarketCapStatus struct {
 	ErrorMessage string    `json:"error_message"`
 	Timestamp    time.Time `json:"timestamp"`
 }
 
-type curData struct {
-	Quote map[string]*quoteData `json:"quote"`
+type coinMarketCapData struct {
+	Quote map[string]*coinMarketCapQuote `json:"quote"`
 }
 
-type quoteData struct {
+type coinMarketCapQuote struct {
 	Price     float64 `json:price`
 	Volume24h float64 `json:volume_24h`
 }
+
+func (r *coinMarketCapResponse) Quote() (Quote, error) {
+	if apiErr := r.Status.ErrorMessage; apiErr != "" {
+		return Quote{}, errors.New(apiErr)
+	}
+
+	sell := r.pair.Sell.Symbol()
+	buy := r.pair.Buy.Symbol()
+
+	if r.Data == nil ||
+		r.Data[sell] == nil ||
+		r.Data[sell].Quote == nil ||
+		r.Data[sell].Quote[buy] == nil {
+		return Quote{}, errors.New("expected data not found in response")
+	}
+
+	quote := Quote{
+		Pair:      r.pair,
+		Timestamp: r.Status.Timestamp,
+		Amount:    r.Data[sell].Quote[buy].Price,
+	}
+	return quote, nil
+}
+
+var _ Exchange = (*CoinMarketCap)(nil)
 
 // c9bd50b1-7a2b-4b5c-9ede-b12a949cc96b
 
@@ -39,18 +64,18 @@ type CoinMarketCap struct {
 	TTL   time.Duration
 
 	values map[Pair]Quote
-	client *http.Client
+	url    string // for testing
 }
 
 // Price obtains the current Quote for the given pair. It returns cached values
 // if a previous Quote is within its TTL.
 func (ex *CoinMarketCap) Price(ctx context.Context, pair Pair) (Quote, error) {
-	if ex.client == nil {
-		ex.client = &http.Client{}
-	}
-
 	if ex.values == nil {
 		ex.values = make(map[Pair]Quote)
+	}
+
+	if ex.url == "" {
+		ex.url = coinMarketCapURL
 	}
 
 	cached, ok := ex.values[pair]
@@ -58,59 +83,23 @@ func (ex *CoinMarketCap) Price(ctx context.Context, pair Pair) (Quote, error) {
 		return cached, nil
 	}
 
-	client := &http.Client{}
-	req, err := http.NewRequestWithContext(
-		ctx,
-		"GET",
-		coinMarketCapURL,
-		nil,
-	)
-
-	if err != nil {
-		return Quote{}, err
-	}
+	headers := make(http.Header)
+	headers.Set("Accepts", "application/json")
+	headers.Add("X-CMC_PRO_API_KEY", ex.Token)
 
 	q := url.Values{}
 	q.Add("symbol", pair.Sell.Symbol())
 	q.Add("convert", pair.Buy.Symbol())
 
-	req.Header.Set("Accepts", "application/json")
-	req.Header.Add("X-CMC_PRO_API_KEY", ex.Token)
-	req.URL.RawQuery = q.Encode()
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return Quote{}, err
-	}
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return Quote{}, err
-	}
-	var parsedResp apiData
-	err = json.Unmarshal(respBody, &parsedResp)
-	if err != nil {
-		return Quote{}, err
-	}
-
-	if apiErr := parsedResp.Status.ErrorMessage; apiErr != "" {
-		return Quote{}, errors.New(apiErr)
-	}
-
-	if parsedResp.Data == nil ||
-		parsedResp.Data[pair.Sell.Symbol()] == nil ||
-		parsedResp.Data[pair.Sell.Symbol()].Quote == nil ||
-		parsedResp.Data[pair.Sell.Symbol()].Quote[pair.Buy.Symbol()] == nil {
-		return Quote{}, errors.New("expected data not found in response")
-	}
-
-	quote := Quote{
-		Pair:      pair,
-		Timestamp: parsedResp.Status.Timestamp,
-		Amount:    parsedResp.Data[pair.Sell.Symbol()].Quote[pair.Buy.Symbol()].Price,
-	}
-
+	quote, err := request(
+		ctx,
+		ex.url,
+		q,
+		headers,
+		&coinMarketCapResponse{pair: pair},
+	)
 	ex.values[pair] = quote
-	return quote, nil
+	return quote, err
 }
 
 func (ex *CoinMarketCap) String() string {

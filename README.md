@@ -1,6 +1,8 @@
 # Sentinel Tick
 
-[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/filecoin-project/sentinel-tick) [![docker build status](https://img.shields.io/docker/cloud/build/filecoin/sentinel-tick?style=flat-square)](https://hub.docker.com/repository/docker/filecoin/sentinel-tick)
+[![go.dev reference](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white&style=flat-square)](https://pkg.go.dev/github.com/filecoin-project/sentinel-tick)
+[![docker build status](https://img.shields.io/docker/cloud/build/filecoin/sentinel-tick?style=flat-square)](https://hub.docker.com/repository/docker/filecoin/sentinel-tick)
+![Go](https://github.com/filecoin-project/sentinel-tick/workflows/Go/badge.svg)
 
 A component of [**Sentinel**](https://github.com/filecoin-project/sentinel), a collection of services which monitor the health and function of the Filecoin network. 
 
