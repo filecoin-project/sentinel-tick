@@ -13,10 +13,10 @@ const schema = "filquotes"
 type Quote struct {
 	//lint:ignore U1000 hit for go-pg
 	tableName struct{} `pg:"filquotes.fil_quotes"`
-	Height    int64    `pg:",pk,use_zero,notnull"`
-	Price     int64    `pg:",use_zero,notnull"`
-	Exchange  string   `pg:",pk,use_zero,notnull`
-	Currency  string   `pg:",pk,use_zero,notnull`
+	Height    int64    `pg:",pk,notnull"`
+	Price     int64    `pg:",notnull"`
+	Exchange  string   `pg:",pk,notnull"`
+	Currency  string   `pg:",pk,notnull"`
 }
 
 // NewQuote creates a new FIL quote for the database.
