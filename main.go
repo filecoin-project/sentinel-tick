@@ -1,3 +1,6 @@
+// This package implements the sentinel-tick application. Once launched, it
+// request price information for the configured pairs from the configured
+// exchanges.
 package main
 
 import (
