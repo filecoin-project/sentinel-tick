@@ -6,7 +6,11 @@
 
 A component of [**Sentinel**](https://github.com/filecoin-project/sentinel), a collection of services which monitor the health and function of the Filecoin network. 
 
-**Sentinel-Tick** collects price information for exchanges where Filecoin is traded and writes it to a PostgreSQL (normally the same one as other Sentinel components.
+**Sentinel-Tick** collects price information for exchanges where Filecoin is traded and writes it to a PostgreSQL (normally the same one as other Sentinel components).
+
+## Usage
+
+`sentinel-tick --help`
 
 ## Code of Conduct
 
