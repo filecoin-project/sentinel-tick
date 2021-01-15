@@ -57,6 +57,12 @@ func main() {
 				EnvVars: []string{"SENTINEL_TICK_TIMEOUT"},
 				Value:   10 * time.Second,
 			},
+			&cli.StringFlag{
+				Name:    "metrics",
+				Usage:   "Prometheus metrics listening endpoint",
+				EnvVars: []string{"SENTINEL_TICK_METRICS"},
+				Value:   "127.0.0.1:2111",
+			},
 			&cli.IntFlag{
 				Name:    "coinmarketcap",
 				Aliases: []string{"cmc"},
@@ -73,11 +79,13 @@ func main() {
 			&cli.BoolFlag{
 				Name:    "kraken",
 				Usage:   "Enable kraken",
-				EnvVars: []string{"KRAKEN"},
+				EnvVars: []string{"SENTINEL_TICK_KRAKEN"},
 				Value:   true,
 			},
 		},
 		Action: func(cctx *cli.Context) error {
+			enableMetrics(cctx)
+
 			db, err := setupDB(
 				cctx.Context,
 				cctx.String("db"),
