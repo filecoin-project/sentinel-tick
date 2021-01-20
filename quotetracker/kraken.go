@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const krakenURL = "https://api.kraken.com/0/public/Ticker"
+const krakenURL = "https://api.kraken.com/"
 
 type krakenResponse struct {
 	pair Pair
@@ -65,7 +65,7 @@ func (ex *Kraken) Price(ctx context.Context, pair Pair) (Quote, error) {
 	q.Add("pair", pair.Sell.Symbol()+pair.Buy.Symbol())
 	return request(
 		ctx,
-		ex.url,
+		ex.url+"/0/public/Ticker",
 		q,
 		nil,
 		&krakenResponse{pair: pair},
