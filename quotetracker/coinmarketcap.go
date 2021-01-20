@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const coinMarketCapURL = "https://pro-api.coinmarketcap.com/v1/cryptocurrency/quotes/latest"
+const coinMarketCapURL = "https://pro-api.coinmarketcap.com"
 
 type coinMarketCapResponse struct {
 	pair Pair
@@ -93,7 +93,7 @@ func (ex *CoinMarketCap) Price(ctx context.Context, pair Pair) (Quote, error) {
 
 	quote, err := request(
 		ctx,
-		ex.url,
+		ex.url+"/v1/cryptocurrency/quotes/latest",
 		q,
 		headers,
 		&coinMarketCapResponse{pair: pair},

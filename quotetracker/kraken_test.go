@@ -71,7 +71,7 @@ func TestKrakenPrice(t *testing.T) {
 	defer s.Close()
 
 	cmc := &Kraken{
-		url: s.URL + "/0/public/Ticker",
+		url: s.URL,
 	}
 	q, err := cmc.Price(context.Background(), Pair{Sell: FIL, Buy: USD})
 	if err != nil {

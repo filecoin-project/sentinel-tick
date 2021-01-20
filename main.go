@@ -82,6 +82,18 @@ func main() {
 				EnvVars: []string{"SENTINEL_TICK_KRAKEN"},
 				Value:   true,
 			},
+			&cli.BoolFlag{
+				Name:    "coinbasepro",
+				Usage:   "Enable Coinbase Pro",
+				EnvVars: []string{"SENTINEL_TICK_COINBASEPRO"},
+				Value:   true,
+			},
+			&cli.BoolFlag{
+				Name:    "coinlistpro",
+				Usage:   "Enable Coinlist Pro",
+				EnvVars: []string{"SENTINEL_TICK_COINLISTPRO"},
+				Value:   true,
+			},
 		},
 		Action: func(cctx *cli.Context) error {
 			enableMetrics(cctx)
@@ -147,6 +159,18 @@ func setupExchanges(cctx *cli.Context) ([]quotetracker.Exchange, error) {
 		kraken := &quotetracker.Kraken{}
 		exchanges = append(exchanges, kraken)
 		fmt.Println("Initialized", kraken)
+	}
+
+	if coinbaseproEnabled := cctx.Bool("coinbasepro"); coinbaseproEnabled {
+		cbp := &quotetracker.Coinbasepro{}
+		exchanges = append(exchanges, cbp)
+		fmt.Println("Initialized", cbp)
+	}
+
+	if coinlistproEnabled := cctx.Bool("coinlistpro"); coinlistproEnabled {
+		clp := &quotetracker.Coinlistpro{}
+		exchanges = append(exchanges, clp)
+		fmt.Println("Initialized", clp)
 	}
 
 	return exchanges, nil
