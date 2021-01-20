@@ -82,7 +82,7 @@ func TestCoinMarketCapPrice(t *testing.T) {
 	cmc := &CoinMarketCap{
 		Token: "auth",
 		TTL:   time.Second,
-		url:   s.URL + "/v1/cryptocurrency/quotes/latest",
+		url:   s.URL,
 	}
 	q, err := cmc.Price(context.Background(), Pair{Sell: FIL, Buy: USD})
 	if err != nil {
