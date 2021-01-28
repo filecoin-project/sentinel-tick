@@ -40,6 +40,7 @@ func request(ctx context.Context, url string, query url.Values, headers http.Hea
 	if err != nil {
 		return Quote{}, err
 	}
+	//fmt.Println(string(respBody))
 	err = json.Unmarshal(respBody, response)
 	if err != nil {
 		return Quote{}, err

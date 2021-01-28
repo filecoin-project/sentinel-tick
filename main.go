@@ -94,6 +94,18 @@ func main() {
 				EnvVars: []string{"SENTINEL_TICK_COINLISTPRO"},
 				Value:   true,
 			},
+			&cli.BoolFlag{
+				Name:    "huobi",
+				Usage:   "Enable huobi",
+				EnvVars: []string{"SENTINEL_TICK_HUOBI"},
+				Value:   true,
+			},
+			&cli.BoolFlag{
+				Name:    "gemini",
+				Usage:   "Enable gemini",
+				EnvVars: []string{"SENTINEL_TICK_GEMINI"},
+				Value:   true,
+			},
 		},
 		Action: func(cctx *cli.Context) error {
 			enableMetrics(cctx)
@@ -173,6 +185,18 @@ func setupExchanges(cctx *cli.Context) ([]quotetracker.Exchange, error) {
 		fmt.Println("Initialized", clp)
 	}
 
+	if huobiEnabled := cctx.Bool("huobi"); huobiEnabled {
+		h := &quotetracker.Huobi{}
+		exchanges = append(exchanges, h)
+		fmt.Println("Initialized", h)
+	}
+
+	if geminiEnabled := cctx.Bool("huobi"); geminiEnabled {
+		g := &quotetracker.Gemini{}
+		exchanges = append(exchanges, g)
+		fmt.Println("Initialized", g)
+	}
+
 	return exchanges, nil
 }
 
@@ -224,7 +248,7 @@ func fetchQuotes(cctx *cli.Context, db *pg.DB, exchanges []quotetracker.Exchange
 
 				q, err := ex.Price(ctx, pair)
 				if err != nil {
-					log.Println(err)
+					log.Println(ex, err)
 					return
 				}
 

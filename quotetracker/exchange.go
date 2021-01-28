@@ -18,6 +18,7 @@ const (
 	EUR Currency = iota
 	USD
 	FIL
+	USDT
 )
 
 // Symbol returns the symbol for a currency.
@@ -29,6 +30,8 @@ func (cur Currency) Symbol() string {
 		return "USD"
 	case FIL:
 		return "FIL"
+	case USDT:
+		return "USDT"
 	default:
 		return "UNKNOWN"
 	}
