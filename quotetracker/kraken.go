@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const krakenURL = "https://api.kraken.com/"
+const krakenURL = "https://api.kraken.com"
 
 type krakenResponse struct {
 	pair Pair
@@ -23,7 +23,7 @@ type krakenResult struct {
 
 func (r *krakenResponse) Quote() (Quote, error) {
 	if len(r.Error) > 0 {
-		return Quote{}, fmt.Errorf("response has errors: %s", r.Error)
+		return Quote{}, fmt.Errorf("kraken: response has errors: %s", r.Error)
 	}
 
 	pairStr := r.pair.Sell.Symbol() + r.pair.Buy.Symbol()
@@ -31,7 +31,7 @@ func (r *krakenResponse) Quote() (Quote, error) {
 	if r.Result == nil ||
 		r.Result[pairStr] == nil ||
 		len(r.Result[pairStr].LastTradeClosed) < 2 {
-		return Quote{}, fmt.Errorf("unexpected response: %+v", r)
+		return Quote{}, fmt.Errorf("kraken: unexpected response: %+v", r)
 	}
 
 	price, err := strconv.ParseFloat(r.Result[pairStr].LastTradeClosed[0], 64)
