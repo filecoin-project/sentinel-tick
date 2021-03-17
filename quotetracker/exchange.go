@@ -19,6 +19,8 @@ const (
 	USD
 	FIL
 	USDT
+	BTC
+	ETH
 )
 
 // Symbol returns the symbol for a currency.
@@ -32,6 +34,10 @@ func (cur Currency) Symbol() string {
 		return "FIL"
 	case USDT:
 		return "USDT"
+	case BTC:
+		return "BTC"
+	case ETH:
+		return "ETH"
 	default:
 		return "UNKNOWN"
 	}
@@ -58,15 +64,17 @@ func (p Pair) String() string {
 	return p.Sell.Symbol() + "-" + p.Buy.Symbol()
 }
 
-// Quote provides price information for a given pair.
+// Quote provides price information for a given pair and traded
+// volumes.
 type Quote struct {
-	Pair      Pair
-	Timestamp time.Time
-	Amount    float64
+	Pair          Pair
+	Timestamp     time.Time
+	Amount        float64
+	VolumeBase24h float64
 }
 
 func (q Quote) String() string {
-	return fmt.Sprintf("%s: %f (%s)", q.Pair, q.Amount, q.Timestamp)
+	return fmt.Sprintf("%s: %f | %f (%s)", q.Pair, q.Amount, q.VolumeBase24h, q.Timestamp)
 }
 
 // Exchange can be implemented by any service that can return current pricing quotes for a given pair.

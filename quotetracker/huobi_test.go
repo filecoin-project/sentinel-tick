@@ -68,4 +68,8 @@ func TestHuobiPrice(t *testing.T) {
 	if q.Amount != 21.9954 {
 		t.Error("price amount not parsed correctly", q.Amount)
 	}
+
+	if q.VolumeBase24h != 22051370.789555945 {
+		t.Error("volume amount not parsed correctly", q.VolumeBase24h)
+	}
 }

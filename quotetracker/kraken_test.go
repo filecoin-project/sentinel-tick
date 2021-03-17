@@ -83,4 +83,7 @@ func TestKrakenPrice(t *testing.T) {
 	if q.Amount != 21.58400 {
 		t.Error("price amount not parsed correctly")
 	}
+	if q.VolumeBase24h != 48009.68384317 {
+		t.Error("volume amount nor parsed correctly")
+	}
 }

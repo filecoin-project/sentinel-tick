@@ -13,28 +13,28 @@ func coinlistproServer(t *testing.T) *httptest.Server {
 
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
-		if path != "/v1/symbols/FIL-USD/quote" {
+		if path != "/v1/symbols/FIL-USD/summary" {
 			t.Fatal("unexpected path ", path)
 		}
 
 		fmt.Fprintf(w, `
 {
+  "type": "spot",
+  "last_price": "76.35000000",
+  "lowest_ask": "76.55000000",
+  "highest_bid": "76.14000000",
   "last_trade": {
-    "price": "22.30000000",
-    "volume": "9.7465",
-    "imbalance": "190.2535",
-    "logical_time": "2021-01-20T12:39:33.000Z",
-    "auction_code": "FIL-USD-2021-01-20T12:39:33.000Z"
+    "price": "75.41000000",
+    "volume": "481.0000",
+    "imbalance": "61.6312",
+    "logicalTime": "2021-03-17T15:36:13.000Z",
+    "auctionCode": "FIL-USD-2021-03-17T15:36:13.000Z"
   },
-  "quote": {
-    "ask": "22.30000000",
-    "ask_size": "312.1919",
-    "bid": "22.25000000",
-    "bid_size": "312.0856"
-  },
-  "after_auction_code": "FIL-USD-2021-01-20T12:43:09.000Z",
-  "call_time": "2021-01-20T12:43:09.086Z",
-  "logical_time": "2021-01-20T12:43:09.000Z"
+  "volume_base_24h": "66321.3156",
+  "volume_quote_24h": "4271801.9941",
+  "price_change_percent_24h": "34.30079156",
+  "highest_price_24h": "76.28000000",
+  "lowest_price_24h": "56.85000000"
 }`)
 	}))
 
@@ -55,7 +55,10 @@ func TestCoinlistproPrice(t *testing.T) {
 	if q.Pair.Sell != FIL || q.Pair.Buy != USD {
 		t.Error("bad pair set")
 	}
-	if q.Amount != 22.30 {
+	if q.Amount != 75.41 {
 		t.Error("price amount not parsed correctly")
+	}
+	if q.VolumeBase24h != 66321.3156 {
+		t.Error("volume amount not parsed correctly")
 	}
 }

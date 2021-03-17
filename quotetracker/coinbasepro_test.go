@@ -49,4 +49,8 @@ func TestCoinbaseproPrice(t *testing.T) {
 	if q.Amount != 22.3019 {
 		t.Error("price amount not parsed correctly")
 	}
+
+	if q.VolumeBase24h != 214729.266 {
+		t.Error("volume amount not parsed correctly")
+	}
 }

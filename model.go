@@ -12,30 +12,32 @@ const schema = "filquotes"
 // Quote stores FIL price information.
 type Quote struct {
 	//lint:ignore U1000 hit for go-pg
-	tableName struct{} `pg:"filquotes.fil_quotes"`
-	Height    int64    `pg:",pk,notnull"`
-	Price     int64    `pg:",notnull"`
-	Exchange  string   `pg:",pk,notnull"`
-	Currency  string   `pg:",pk,notnull"`
+	tableName     struct{} `pg:"filquotes.fil_quotes"`
+	Height        int64    `pg:",pk,notnull"`
+	Price         int64    `pg:",notnull"`
+	VolumeBase24h int64    `pg:",notnull"`
+	Exchange      string   `pg:",pk,notnull"`
+	Currency      string   `pg:",pk,notnull"`
 }
 
 // NewQuote creates a new FIL quote for the database.
 func NewQuote(h int64, ex string, q quotetracker.Quote) Quote {
 	return Quote{
-		Height:   h,
-		Price:    toMicroFIL(q.Amount),
-		Exchange: ex,
-		Currency: q.Pair.Buy.Symbol(),
+		Height:        h,
+		Price:         toMicro(q.Amount),
+		VolumeBase24h: toMicro(q.VolumeBase24h),
+		Exchange:      ex,
+		Currency:      q.Pair.Buy.Symbol(),
 	}
 }
 
-// toMicroFIL converts FIL price to int for storage.
-func toMicroFIL(price float64) int64 {
-	return int64(price * 1000000) // microFIL
+// toMicro converts a float unit to int micro-units for storage.
+func toMicro(amount float64) int64 {
+	return int64(amount * 1000000) // micro
 }
 
-// func fromMicroFIL(price int64) float64 {
-// 	return float64(price / 1000000) // microFIL
+// func fromMicro(amount int64) float64 {
+// 	return float64(amount / 1000000) // micro
 // }
 
 // Persist uses a transaction to insert a quote in the DB.

@@ -19,6 +19,7 @@ type krakenResponse struct {
 
 type krakenResult struct {
 	LastTradeClosed []string `json:"c"`
+	Volume          []string `json:"v"`
 }
 
 func (r *krakenResponse) Quote() (Quote, error) {
@@ -26,23 +27,37 @@ func (r *krakenResponse) Quote() (Quote, error) {
 		return Quote{}, fmt.Errorf("kraken: response has errors: %s", r.Error)
 	}
 
-	pairStr := r.pair.Sell.Symbol() + r.pair.Buy.Symbol()
+	// kraken returns pair strings like XXBTZUSD instead of BTCUSD
+	// Since we request a single one, let's just assume what we requested
+	// comes back.
+	var pairStr string
+	for k := range r.Result {
+		pairStr = k
+		break
+	}
 
 	if r.Result == nil ||
 		r.Result[pairStr] == nil ||
-		len(r.Result[pairStr].LastTradeClosed) < 2 {
+		len(r.Result[pairStr].LastTradeClosed) < 2 ||
+		len(r.Result[pairStr].Volume) < 2 {
 		return Quote{}, fmt.Errorf("kraken: unexpected response: %+v", r)
 	}
 
 	price, err := strconv.ParseFloat(r.Result[pairStr].LastTradeClosed[0], 64)
 	if err != nil {
-		return Quote{}, err
+		return Quote{}, fmt.Errorf("kraken: error parsing price: %w", err)
+	}
+
+	vol, err := strconv.ParseFloat(r.Result[pairStr].Volume[1], 64)
+	if err != nil {
+		return Quote{}, fmt.Errorf("kraken: error parsing volume: %w", err)
 	}
 
 	quote := Quote{
-		Pair:      r.pair,
-		Timestamp: time.Now(),
-		Amount:    price,
+		Pair:          r.pair,
+		Timestamp:     time.Now(),
+		Amount:        price,
+		VolumeBase24h: vol,
 	}
 
 	return quote, nil
@@ -61,8 +76,17 @@ func (ex *Kraken) Price(ctx context.Context, pair Pair) (Quote, error) {
 		ex.url = krakenURL
 	}
 
+	sell := pair.Sell.Symbol()
+	buy := pair.Buy.Symbol()
+	if sell == "BTC" {
+		sell = "XBT"
+	}
+	if buy == "BTC" {
+		buy = "XBT"
+	}
+
 	q := url.Values{}
-	q.Add("pair", pair.Sell.Symbol()+pair.Buy.Symbol())
+	q.Add("pair", sell+buy)
 	return request(
 		ctx,
 		ex.url+"/0/public/Ticker",
