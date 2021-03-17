@@ -51,4 +51,8 @@ func TestGeminiPrice(t *testing.T) {
 	if q.Amount != 22.0384 {
 		t.Error("price amount not parsed correctly")
 	}
+
+	if q.VolumeBase24h != 8340.55228255 {
+		t.Error("volume amount not parsed correctly")
+	}
 }

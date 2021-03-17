@@ -19,6 +19,7 @@ type krakenResponse struct {
 
 type krakenResult struct {
 	LastTradeClosed []string `json:"c"`
+	Volume          []string `json:"v"`
 }
 
 func (r *krakenResponse) Quote() (Quote, error) {
@@ -30,19 +31,26 @@ func (r *krakenResponse) Quote() (Quote, error) {
 
 	if r.Result == nil ||
 		r.Result[pairStr] == nil ||
-		len(r.Result[pairStr].LastTradeClosed) < 2 {
+		len(r.Result[pairStr].LastTradeClosed) < 2 ||
+		len(r.Result[pairStr].Volume) < 2 {
 		return Quote{}, fmt.Errorf("kraken: unexpected response: %+v", r)
 	}
 
 	price, err := strconv.ParseFloat(r.Result[pairStr].LastTradeClosed[0], 64)
 	if err != nil {
-		return Quote{}, err
+		return Quote{}, fmt.Errorf("kraken: error parsing price: %w", err)
+	}
+
+	vol, err := strconv.ParseFloat(r.Result[pairStr].Volume[1], 64)
+	if err != nil {
+		return Quote{}, fmt.Errorf("kraken: error parsing volume: %w", err)
 	}
 
 	quote := Quote{
 		Pair:      r.pair,
 		Timestamp: time.Now(),
 		Amount:    price,
+		VolumeBase24h: vol,
 	}
 
 	return quote, nil

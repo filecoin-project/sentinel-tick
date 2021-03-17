@@ -31,6 +31,7 @@ func (r *huobiResponse) Quote() (Quote, error) {
 		Pair:      r.pair,
 		Timestamp: time.Now(),
 		Amount:    r.Tick.Close,
+		VolumeBase24h: r.Tick.Vol,
 	}
 	return quote, nil
 }

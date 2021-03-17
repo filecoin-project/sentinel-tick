@@ -2,6 +2,7 @@ package quotetracker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"time"
@@ -15,7 +16,8 @@ type geminiResponse struct {
 	Result  string `json:"result"`
 	Message string `json:"message"`
 
-	Last string `json:"last"`
+	Last   string                 `json:"last"`
+	Volume map[string]interface{} `json:"volume"`
 }
 
 func (r *geminiResponse) Quote() (Quote, error) {
@@ -23,15 +25,35 @@ func (r *geminiResponse) Quote() (Quote, error) {
 		return Quote{}, fmt.Errorf("gemini error: %s", r.Message)
 	}
 
-	v, err := strconv.ParseFloat(r.Last, 64)
+	last, err := strconv.ParseFloat(r.Last, 64)
 	if err != nil {
 		return Quote{}, fmt.Errorf("gemini: error parsing amount: %w", err)
+	}
+
+	if r.Volume == nil {
+		return Quote{}, errors.New("gemini: no volume information")
+	}
+
+	volVal, ok := r.Volume[r.pair.Sell.Symbol()]
+	if !ok {
+		return Quote{}, fmt.Errorf("gemini: no volume information for %s", r.pair.Sell.Symbol())
+	}
+
+	volStr, ok := volVal.(string)
+	if !ok {
+		return Quote{}, fmt.Errorf("gemini: bad volume information for %s: %+v", r.pair.Sell.Symbol(), volVal)
+	}
+
+	vol, err := strconv.ParseFloat(volStr, 64)
+	if err != nil {
+		return Quote{}, fmt.Errorf("gemini: error parsing volume: %w", err)
 	}
 
 	quote := Quote{
 		Pair:      r.pair,
 		Timestamp: time.Now(),
-		Amount:    v,
+		Amount:    last,
+		VolumeBase24h: vol,
 	}
 	return quote, nil
 }

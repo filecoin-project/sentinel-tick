@@ -16,7 +16,11 @@ type coinbaseproResponse struct {
 }
 
 func (cbpr *coinbaseproResponse) Quote() (Quote, error) {
-	v, err := strconv.ParseFloat(cbpr.Last, 64)
+	last, err := strconv.ParseFloat(cbpr.Last, 64)
+	if err != nil {
+		return Quote{}, err
+	}
+	vol, err := strconv.ParseFloat(cbpr.Volume, 64)
 	if err != nil {
 		return Quote{}, err
 	}
@@ -24,7 +28,8 @@ func (cbpr *coinbaseproResponse) Quote() (Quote, error) {
 	quote := Quote{
 		Pair:      cbpr.pair,
 		Timestamp: time.Now(),
-		Amount:    v,
+		Amount:    last,
+		VolumeBase24h: vol,
 	}
 
 	return quote, nil

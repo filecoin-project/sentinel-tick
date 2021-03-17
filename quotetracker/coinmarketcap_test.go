@@ -94,4 +94,8 @@ func TestCoinMarketCapPrice(t *testing.T) {
 	if q.Amount != 21.58619654190641 {
 		t.Error("price amount not parsed correctly")
 	}
+
+	if q.VolumeBase24h != 251752867.90136266 {
+		t.Error("volume amount not parsed correctly")
+	}
 }

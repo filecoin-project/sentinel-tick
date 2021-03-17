@@ -28,7 +28,7 @@ type coinMarketCapData struct {
 
 type coinMarketCapQuote struct {
 	Price     float64 `json:"price"`
-	Volume24h float64 `json:"volume_24h"`
+	VolumeBase24h float64 `json:"volume_24h"`
 }
 
 func (r *coinMarketCapResponse) Quote() (Quote, error) {
@@ -50,6 +50,7 @@ func (r *coinMarketCapResponse) Quote() (Quote, error) {
 		Pair:      r.pair,
 		Timestamp: r.Status.Timestamp,
 		Amount:    r.Data[sell].Quote[buy].Price,
+		VolumeBase24h: r.Data[sell].Quote[buy].VolumeBase24h,
 	}
 	return quote, nil
 }
