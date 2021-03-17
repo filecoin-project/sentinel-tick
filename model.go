@@ -7,17 +7,18 @@ import (
 	pg "github.com/go-pg/pg/v10"
 )
 
-const schema = "filquotes"
+const schema = "currencies"
 
 // Quote stores FIL price information.
 type Quote struct {
 	//lint:ignore U1000 hit for go-pg
-	tableName     struct{} `pg:"filquotes.fil_quotes"`
+	tableName     struct{} `pg:"currencies.quotes"`
 	Height        int64    `pg:",pk,notnull"`
 	Price         int64    `pg:",notnull"`
-	VolumeBase24h int64    `pg:",notnull"`
+	VolumeBase24h int64    `pg:"volume_base_24h,notnull"`
 	Exchange      string   `pg:",pk,notnull"`
-	Currency      string   `pg:",pk,notnull"`
+	Sell          string   `pg:",pk,notnull"`
+	Buy           string   `pg:",pk,notnull"`
 }
 
 // NewQuote creates a new FIL quote for the database.
@@ -27,7 +28,8 @@ func NewQuote(h int64, ex string, q quotetracker.Quote) Quote {
 		Price:         toMicro(q.Amount),
 		VolumeBase24h: toMicro(q.VolumeBase24h),
 		Exchange:      ex,
-		Currency:      q.Pair.Buy.Symbol(),
+		Sell:          q.Pair.Sell.Symbol(),
+		Buy:           q.Pair.Buy.Symbol(),
 	}
 }
 
