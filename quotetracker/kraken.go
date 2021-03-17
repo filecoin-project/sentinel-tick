@@ -27,7 +27,14 @@ func (r *krakenResponse) Quote() (Quote, error) {
 		return Quote{}, fmt.Errorf("kraken: response has errors: %s", r.Error)
 	}
 
-	pairStr := r.pair.Sell.Symbol() + r.pair.Buy.Symbol()
+	// kraken returns pair strings like XXBTZUSD instead of BTCUSD
+	// Since we request a single one, let's just assume what we requested
+	// comes back.
+	var pairStr string
+	for k := range r.Result {
+		pairStr = k
+		break
+	}
 
 	if r.Result == nil ||
 		r.Result[pairStr] == nil ||
@@ -47,9 +54,9 @@ func (r *krakenResponse) Quote() (Quote, error) {
 	}
 
 	quote := Quote{
-		Pair:      r.pair,
-		Timestamp: time.Now(),
-		Amount:    price,
+		Pair:          r.pair,
+		Timestamp:     time.Now(),
+		Amount:        price,
 		VolumeBase24h: vol,
 	}
 

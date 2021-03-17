@@ -19,6 +19,8 @@ const (
 	USD
 	FIL
 	USDT
+	BTC
+	ETH
 )
 
 // Symbol returns the symbol for a currency.
@@ -32,6 +34,10 @@ func (cur Currency) Symbol() string {
 		return "FIL"
 	case USDT:
 		return "USDT"
+	case BTC:
+		return "BTC"
+	case ETH:
+		return "ETH"
 	default:
 		return "UNKNOWN"
 	}
