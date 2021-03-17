@@ -76,8 +76,17 @@ func (ex *Kraken) Price(ctx context.Context, pair Pair) (Quote, error) {
 		ex.url = krakenURL
 	}
 
+	sell := pair.Sell.Symbol()
+	buy := pair.Buy.Symbol()
+	if sell == "BTC" {
+		sell = "XBT"
+	}
+	if buy == "BTC" {
+		buy = "XBT"
+	}
+
 	q := url.Values{}
-	q.Add("pair", pair.Sell.Symbol()+pair.Buy.Symbol())
+	q.Add("pair", sell+buy)
 	return request(
 		ctx,
 		ex.url+"/0/public/Ticker",

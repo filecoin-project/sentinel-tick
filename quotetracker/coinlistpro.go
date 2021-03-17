@@ -12,6 +12,7 @@ const coinlistproURL = "https://trade-api.coinlist.co"
 type coinlistproResponse struct {
 	pair Pair
 
+	Message       string               `json:"message"`
 	LastTrade     coinlistproLastTrade `json:"last_trade"`
 	VolumeBase24h string               `json:"volume_base_24h"`
 }
@@ -22,6 +23,10 @@ type coinlistproLastTrade struct {
 }
 
 func (r *coinlistproResponse) Quote() (Quote, error) {
+	if r.Message != "" {
+		return Quote{}, fmt.Errorf("coinlistpro: error: %s", r.Message)
+	}
+
 	price, err := strconv.ParseFloat(r.LastTrade.Price, 64)
 	if err != nil {
 		return Quote{}, fmt.Errorf("coinlistpro: error parsing price: %w", err)
@@ -36,8 +41,8 @@ func (r *coinlistproResponse) Quote() (Quote, error) {
 		Pair: r.pair,
 		//Timestamp: r.LastTrade.LogicalTime,
 		// not much trading going on. Prefer this to having blanks.
-		Timestamp: time.Now(),
-		Amount:    price,
+		Timestamp:     time.Now(),
+		Amount:        price,
 		VolumeBase24h: vol,
 	}
 	return quote, nil
