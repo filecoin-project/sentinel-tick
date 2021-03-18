@@ -241,11 +241,10 @@ func fetchQuotes(cctx *cli.Context, db *pg.DB, exchanges []quotetracker.Exchange
 
 	fmt.Println("-- Epoch ", epoch)
 	for _, ex := range exchanges {
-		for _, pair := range pairs {
-			wg.Add(1)
-			go func(ex quotetracker.Exchange, pair quotetracker.Pair) {
-				defer wg.Done()
-
+		wg.Add(1)
+		go func(ex quotetracker.Exchange, pairs []quotetracker.Pair) {
+			defer wg.Done()
+			for _, pair := range pairs {
 				q, err := ex.Price(ctx, pair)
 				if err != nil {
 					log.Println(ex, err)
@@ -261,8 +260,12 @@ func fetchQuotes(cctx *cli.Context, db *pg.DB, exchanges []quotetracker.Exchange
 						q,
 					)
 				}
-			}(ex, pair)
-		}
+
+				// Make it less likely to trigger a rate
+				// limiting check or something on the api.
+				time.Sleep(time.Second)
+			}
+		}(ex, pairs)
 	}
 	wg.Wait()
 	close(quotesCh)
