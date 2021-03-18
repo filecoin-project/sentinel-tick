@@ -18,8 +18,9 @@ type huobiResponse struct {
 }
 
 type huobiTick struct {
-	Close float64 `json:"close"`
-	Vol   float64 `json:"vol"`
+	Close  float64 `json:"close"`
+	Vol    float64 `json:"vol"`    // 24h volume in quote currency
+	Amount float64 `json:"amount"` // 24h volume in base currency
 }
 
 func (r *huobiResponse) Quote() (Quote, error) {
@@ -28,10 +29,10 @@ func (r *huobiResponse) Quote() (Quote, error) {
 	}
 
 	quote := Quote{
-		Pair:      r.pair,
-		Timestamp: time.Now(),
-		Amount:    r.Tick.Close,
-		VolumeBase24h: r.Tick.Vol,
+		Pair:          r.pair,
+		Timestamp:     time.Now(),
+		Amount:        r.Tick.Close,
+		VolumeBase24h: r.Tick.Amount,
 	}
 	return quote, nil
 }
