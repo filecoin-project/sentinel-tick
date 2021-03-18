@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 )
@@ -18,9 +19,13 @@ func coinMarketCapServer(t *testing.T) *httptest.Server {
 		}
 
 		sell := r.URL.Query().Get("symbol")
-		buy := r.URL.Query().Get("convert")
-		if sell == "" || buy == "" {
+		convert := r.URL.Query().Get("convert")
+		if sell == "" || convert == "" {
 			t.Fatal("pair not set")
+		}
+		buys := strings.Split(convert, ",")
+		if len(buys) != 2 {
+			t.Fatal("wrong convert argument")
 		}
 
 		fmt.Fprintf(w, `
@@ -57,6 +62,18 @@ func coinMarketCapServer(t *testing.T) *httptest.Server {
       "last_updated": "2021-01-12T13:13:03.000Z",
       "quote": {
         "%s": {
+          "price": 1,
+          "volume_24h": 63993291.66774165,
+          "percent_change_1h": 0,
+          "percent_change_24h": 0,
+          "percent_change_7d": 0,
+          "percent_change_30d": 0,
+          "percent_change_60d": 0,
+          "percent_change_90d": 0,
+          "market_cap": 58362381.00000001,
+          "last_updated": "2021-03-18T15:06:04.000Z"
+        },
+        "%s": {
           "price": 21.58619654190641,
           "volume_24h": 251752867.90136266,
           "percent_change_1h": -0.45896058,
@@ -69,7 +86,7 @@ func coinMarketCapServer(t *testing.T) *httptest.Server {
     }
   }
 }
-`, sell, sell, buy)
+`, sell, sell, buys[0], buys[1])
 	}))
 
 	return s
@@ -95,7 +112,7 @@ func TestCoinMarketCapPrice(t *testing.T) {
 		t.Error("price amount not parsed correctly")
 	}
 
-	if q.VolumeBase24h != 251752867.90136266 {
+	if q.VolumeBase24h != 63993291.66774165 {
 		t.Error("volume amount not parsed correctly")
 	}
 }

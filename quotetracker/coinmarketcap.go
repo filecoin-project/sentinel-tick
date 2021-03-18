@@ -27,7 +27,7 @@ type coinMarketCapData struct {
 }
 
 type coinMarketCapQuote struct {
-	Price     float64 `json:"price"`
+	Price         float64 `json:"price"`
 	VolumeBase24h float64 `json:"volume_24h"`
 }
 
@@ -42,15 +42,16 @@ func (r *coinMarketCapResponse) Quote() (Quote, error) {
 	if r.Data == nil ||
 		r.Data[sell] == nil ||
 		r.Data[sell].Quote == nil ||
-		r.Data[sell].Quote[buy] == nil {
+		r.Data[sell].Quote[buy] == nil ||
+		r.Data[sell].Quote[sell] == nil {
 		return Quote{}, errors.New("expected data not found in response")
 	}
 
 	quote := Quote{
-		Pair:      r.pair,
-		Timestamp: r.Status.Timestamp,
-		Amount:    r.Data[sell].Quote[buy].Price,
-		VolumeBase24h: r.Data[sell].Quote[buy].VolumeBase24h,
+		Pair:          r.pair,
+		Timestamp:     r.Status.Timestamp,
+		Amount:        r.Data[sell].Quote[buy].Price,
+		VolumeBase24h: r.Data[sell].Quote[sell].VolumeBase24h,
 	}
 	return quote, nil
 }
@@ -90,7 +91,7 @@ func (ex *CoinMarketCap) Price(ctx context.Context, pair Pair) (Quote, error) {
 
 	q := url.Values{}
 	q.Add("symbol", pair.Sell.Symbol())
-	q.Add("convert", pair.Buy.Symbol())
+	q.Add("convert", pair.Sell.Symbol()+","+pair.Buy.Symbol())
 
 	quote, err := request(
 		ctx,
