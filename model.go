@@ -13,9 +13,9 @@ const schema = "currencies"
 type Quote struct {
 	//lint:ignore U1000 hit for go-pg
 	tableName     struct{} `pg:"currencies.quotes"`
-	Height        int64    `pg:",pk,notnull"`
-	Price         int64    `pg:",notnull"`
-	VolumeBase24h int64    `pg:"volume_base_24h,notnull"`
+	Height        int64    `pg:",pk,notnull,use_zero"`
+	Price         int64    `pg:",notnull,use_zero"`
+	VolumeBase24h int64    `pg:"volume_base_24h,notnull,use_zero"`
 	Exchange      string   `pg:",pk,notnull"`
 	Sell          string   `pg:",pk,notnull"`
 	Buy           string   `pg:",pk,notnull"`
