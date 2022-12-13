@@ -1,0 +1,46 @@
+name: Docker
+
+on:
+  pull_request:
+  push:
+    tags:
+      - 'v*.*.*'
+      - 'v*.*.*-rc*'
+
+env:
+  IMAGETAG: ${GITHUB_REF}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Test Docker Build
+        run: docker build .
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Log in to Docker Hub
+        uses: docker/login-action@c56af957549030174b10d6867f20e78cfd7debc5 # @v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      - name: Get tag metadata
+        uses: docker/metadata-action@c56af957549030174b10d6867f20e78cfd7debc5 # @v3
+        with:
+          images: |
+            filecoin/sentinel-locations
+          tags: |
+            type=semver,pattern={{version}}
+      - name: Push to Docker Hub
+        uses: docker/build-push-action@c56af957549030174b10d6867f20e78cfd7debc5 # @v3
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
