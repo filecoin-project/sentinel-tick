@@ -2,14 +2,22 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net/url"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
 )
 
-func setupDB(ctx context.Context, url string, poolSize int, appName string) (*pg.DB, error) {
-	opt, err := pg.ParseURL(url)
+func setupDB(ctx context.Context, dbURL string, poolSize int, appName string) (*pg.DB, error) {
+	// pre-emptively check for url parse failures so
+	// we don't print the failing url string to stdout
+	_, err := url.Parse(dbURL)
+	if err != nil {
+		return nil, errors.New("failed to parse url")
+	}
+	opt, err := pg.ParseURL(dbURL)
 	if err != nil {
 		return nil, err
 	}
