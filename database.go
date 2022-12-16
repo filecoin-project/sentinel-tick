@@ -4,22 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
 
 	"github.com/go-pg/pg/v10"
 	"github.com/go-pg/pg/v10/orm"
 )
 
 func setupDB(ctx context.Context, dbURL string, poolSize int, appName string) (*pg.DB, error) {
-	// pre-emptively check for url parse failures so
-	// we don't print the failing url string to stdout
-	_, err := url.Parse(dbURL)
-	if err != nil {
-		return nil, errors.New("failed to parse url")
-	}
 	opt, err := pg.ParseURL(dbURL)
 	if err != nil {
-		return nil, err
+		return nil, errors.New("failed to parse database connection url")
 	}
 
 	opt.PoolSize = poolSize
