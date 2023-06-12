@@ -2,5 +2,7 @@ version: "3.9"
 services:
   tick:
     image: filecoin/sentinel-tick:v0.1.3
+    container_name: tick
     environment:
       SENTINEL_TICK_DB: "postgres://postgres:password@localhost:5432/postgres?sslmode=disable"
+    restart: always
